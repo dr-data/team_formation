@@ -1,6 +1,6 @@
 from __future__ import division
 __author__ = 'sivanov'
-import random, sys
+import random, sys,optparse
 from itertools import cycle
 
 
@@ -20,130 +20,37 @@ def get_players(in_f):
             players[d[1]] = d[2:]
     return players
 
-def get_number_of_teams(N, m):
-    '''
-    Calculate the total number of teams
-    :param N: total number of players
-    :param m: maximum number of players per team
-    :return:
-    '''
-    if not N%m:
-        return N//m
-    else:
-        return N//m + 1
-
 def assign_tasks_to_teams(teams_tasks, tasks):
-
-    teams_tasks[0] = '2'
-    teams_tasks[1] = '2'
-    for i in range(2,2+5):
-        teams_tasks[i] = 1
-    count = 7
+    count = 0
     T = len(teams_tasks)
     for task in cycle(tasks):
-        if count > T:
-            break
-        if task == '2':
-            continue
         teams_tasks[count] = task
         count += 1
-
+        if count > T:
+            break
     return teams_tasks
 
+def get_prefered_tasks(players):
+    tasks = set() # all tasks that were specified
+    for pref in players.values():
+        tasks.update(pref[0:3])
+    tasks = list(tasks)
+    random.shuffle(tasks)
+    return tasks
 
-def get_teams(in_f, m, a=2, b=1.5, c=1, d = 0, e=-2):
-    players = get_players(in_f)
-    N = len(players)
-    T = get_number_of_teams(N, m)
-    classes = dict()
-    teams = dict()
-    teams_tasks = dict()
-    teams_classes = dict()
-    teams_first_pref = dict()
-    for i in range(T):
-        teams[i] = []
-        teams_classes[i] = []
-        teams_first_pref[i] = []
-        teams_tasks[i] = None
-    tasks = set()
-    for pl in players:
-        tasks.add(players[pl][0])
-        tasks.add(players[pl][1])
-        tasks.add(players[pl][2])
-    tasks_lst = list(tasks)
-    random.shuffle(tasks_lst)
-    teams_tasks = assign_tasks_to_teams(teams_tasks, tasks_lst)
+def select_player(names, players):
+    name = random.choice(names)
+    p1 = players[name][0]
+    p2 = players[name][1]
+    p3 = players[name][2]
+    return name, p1, p2, p3
 
-    for p in players:
-        skill = players[p][-1]
-        classes.setdefault(skill, []).append(p)
 
-    count = 0
-    for cl in cycle(classes):
-        if count == N:
-            break
-        names = classes[cl]
-        if not len(names):
-            continue
-        name = random.choice(names)
-        names.remove(name)
-        pref1 = players[name][0]
-        pref2 = players[name][1]
-        pref3 = players[name][2]
-        skill = players[name][3]
-
-        best_choice_team = -1
-        best_choice_score = float("-Inf")
-        for t in teams:
-            if len(teams[t]) == m:
-                continue
-            # if not len(teams[t]):
-            #     teams_tasks[t] = pref1
-            #     best_choice_team = t
-            #     break
-
-            score = 0
-            if teams_tasks[t] == pref1:
-                score += a
-                for pl in teams[t]:
-                    if cl == players[pl][-1]:
-                        score += e
-                        break
-                if score > best_choice_score:
-                    best_choice_score = score
-                    best_choice_team = t
-            elif teams_tasks[t] == pref2:
-                score += b
-                for pl in teams[t]:
-                    if cl == players[pl][-1]:
-                        score += e
-                        break
-                if score > best_choice_score:
-                    best_choice_score = score
-                    best_choice_team = t
-            elif teams_tasks[t] == pref3:
-                score += c
-                for pl in teams[t]:
-                    if cl == players[pl][-1]:
-                        score += e
-                        break
-                if score > best_choice_score:
-                    best_choice_score = score
-                    best_choice_team = t
-            else:
-                score += d
-                for pl in teams[t]:
-                    if cl == players[pl][-1]:
-                        score += e
-                        break
-                if score > best_choice_score:
-                    best_choice_score = score
-                    best_choice_team = t
-        teams[best_choice_team].append(name)
-        teams_classes[best_choice_team].append(skill)
-        teams_first_pref[best_choice_team].append(pref1)
-        count += 1
-    return teams, teams_classes, teams_tasks, teams_first_pref, players
+def same_class(team, cl, players):
+    for pl in team:
+        if cl == players[pl][-1]:
+            return True
+    return False
 
 def print_teams(teams, teams_tasks, players):
     print 'Team\tName\tSkills\tPref.1\tPref.2'
@@ -152,46 +59,93 @@ def print_teams(teams, teams_tasks, players):
             print '%s\t%s\t%s\t%s\t%s' %(teams_tasks[t], name, players[name][-1], players[name][0], players[name][1])
         print
 
+def get_teams(in_f, m, a=2, b=1.5, c=1, d = 0, e=-2):
+
+    # INITIALIZATION
+    players = get_players(in_f)
+    N = len(players)
+    T = N//m + bool(N%m) # add one team if m doesn't divide N
+
+    teams = {i: [] for i in range(T)} # team number -> [names]
+    teams_tasks = {i: None for i in range(T)} # team number -> task number
+    classes = dict()
+    for p in players:
+        skill = players[p][-1]
+        classes.setdefault(skill, []).append(p)
+
+    tasks = get_prefered_tasks(players)
+
+    # MAIN ALGORITHM
+
+    # Phase 1
+    # Assign tasks to teams
+    teams_tasks = assign_tasks_to_teams(teams_tasks, tasks)
+
+    # Phase 2
+    # Assign a player to a team
+    for count, cl in enumerate(cycle(classes)):
+        # Terminate if all players are assigned
+        if count == N:
+            break
+
+        # choose next class
+        names = classes[cl]
+        if not len(names):
+            continue
+        # select a player
+        name, p1, p2, p3 = select_player(names, players)
+        names.remove(name)
+
+        # find the best team at the current moment for the selected player
+        best_choice_team = -1 # team number
+        best_choice_score = float("-Inf") # score the player gets if he selects this team (the higher, the better)
+        for t in teams:
+            if len(teams[t]) == m: # if no space in a team move to next one
+                continue
+
+            # get score of a player for each team and select the highest
+            tt = teams_tasks[t]
+            score = (tt == p1)*a + (tt == p2)*b + (tt == p3)*c + (tt != p1 and tt != p2 and tt != p3)*d
+
+            if same_class(teams[t], cl, players):
+                score += e
+            if score > best_choice_score:
+                best_choice_score = score
+                best_choice_team = t
+
+        teams[best_choice_team].append(name)
+    return teams, teams_tasks, players
+
 if __name__ == "__main__":
 
-    T1, T2, T3, T4, players = get_teams("preferences.csv", 5)
-    print T1
-    print T2
-    print T3
-    print T4
-    print_teams(T1, T3, players)
+    parser = optparse.OptionParser(usage='usage: %prog [options] arguments')
+    parser.add_option('-f', '--file',
+                            dest='in_f',
+                            help='Input filename')
+    parser.add_option('-m',
+                            dest='m', type=int,
+                            help='Maximum number of players per team')
+    parser.add_option('-o', '--out',
+                      action="store", dest="out_f",
+                      help="Output filename")
+    # TODO add additional optional parameters for score grades
 
-    # if len(sys.argv) < 3:
-    #     print
-    #     print 'Error:'
-    #     print 'The input should include the file with names and upper bound on the number of people per team.'
-    #     print 'Optional arguments:'
-    #     print '\t -o -- name of output file'
-    #     print 'Example of command: python team_formation preferences.csv 5 -o teams.txt'
-    #     sys.exit(0)
-    # if len(sys.argv) == 4:
-    #     print
-    #     print 'Error:'
-    #     print 'Please provide output filename or write to console (omit -o)'
-    #     print 'Example of command: python team_formation preferences.csv 5 -o teams.txt'
-    #     sys.exit(0)
-    #
-    # if len(sys.argv) == 5 and sys.argv[3] == "-o":
-    #     out_f = sys.argv[4]
-    #     sys.stdout = open(out_f, "w+")
-    #
-    # in_f = sys.argv[1]
-    # m = int(sys.argv[2])
-    #
-    #
-    # T1, T2, T3, T4, players = get_teams(in_f, m)
-    # # T1, T2, T3, T4, players = get_teams("preferences.csv", 3)
-    # # print T1
-    # # print T2
-    # # print T3
-    # # print T4
-    # # print_teams(T1, T3, players)
-    # print_teams(T1, T3, players)
+    options, args = parser.parse_args()
+
+    if not options.in_f:   # if filename is not given
+        parser.error('Filename not given')
+    in_f = options.in_f
+
+    if not options.m:   # if filename is not given
+        parser.error('Maximum number of players not given')
+    m = options.m
+
+    if options.out_f:
+        out_f = options.out_f
+        sys.stdout = open(out_f, "w+")
+
+    teams, teams_tasks, players = get_teams(in_f, m)
+    print_teams(teams, teams_tasks, players)
 
 
 
