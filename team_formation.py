@@ -118,7 +118,7 @@ def get_teams(in_f, m, a=2, b=1.5, c=1, d = 0, e=-2):
 
 if __name__ == "__main__":
 
-    parser = optparse.OptionParser(usage='usage: %prog [options] arguments')
+    parser = optparse.OptionParser(usage='usage example: %prog [options] -f preferences.csv -m 5')
     parser.add_option('-f', '--file',
                             dest='in_f',
                             help='Input filename')
