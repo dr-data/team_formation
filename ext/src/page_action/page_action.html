@@ -1,6 +1,11 @@
 <!doctype html>
+<head>
+	<script src='js/jquery-1.6.1.min.js'></script>
+    <script src="js/parse.js"></script>
+    <script src="js/fetch.js"></script>
+</head>
 <style type="text/css">
-	#mainPopup {
+	#popup {
 		padding: 10px;
 		height: 200px;
 		width: 400px;
@@ -11,7 +16,43 @@
 	}
 </style>
 
-<div id="mainPopup">
-<h1>Hello extensionizr!</h1>
-<p>To shut this popup down, edit the manifest file and remove the "default popup" key. To edit it, just edit ext/page_action/page_action.html. The CSS is there, too.</p>
+<div id="popup">
+
+<h1>Yo! This is Teammy!</h1>
+<p>I still don't know how to experiment with page actions, so I continue with browser actions.</p>
+
+<table id="myTable">
+  <tr>
+    <td>Row1 cell1</td>
+    <td>Row1 cell2</td>
+  </tr>
+  <tr>
+    <td>Row2 cell1</td>
+    <td>Row2 cell2</td>
+  </tr>
+  <tr>
+    <td>Row3 cell1</td>
+    <td>Row3 cell2</td>
+  </tr>
+</table>
+<br>
+
+<button onclick="myCreateFunction()">Create row</button>
+<button onclick="myDeleteFunction()">Delete row</button>
+
+<script>
+function myCreateFunction() {
+    var table = document.getElementById("myTable");
+    var row = table.insertRow(-1);
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+    cell1.innerHTML = "NEW CELL1";
+    cell2.innerHTML = "NEW CELL2";
+}
+
+function myDeleteFunction() {
+    document.getElementById("myTable").deleteRow(-1);
+}
+</script>
+
 </div>

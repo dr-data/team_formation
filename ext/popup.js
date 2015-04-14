@@ -10,7 +10,8 @@ function create_row() {
     for (i=2; i<m; i++) {
 	    var cell = row.insertCell(i);
 	    cell.innerHTML = "<input size=4>";
-    } 
+    }
+    console.log(document.body.innerHTML);
 }
 document.getElementById('create_row').onclick = create_row;
 
@@ -18,6 +19,40 @@ function remove_row() {
     document.getElementById("main_table").deleteRow(-1);
 }
 document.getElementById('remove_row').onclick = remove_row;
+
+// solution found here
+// http://stackoverflow.com/a/18120786/2069858
+function remove_element(el) {
+	Element.prototype.remove = function() {
+	    this.parentElement.removeChild(this);
+	}
+	NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+	    for(var i = 0, len = this.length; i < len; i++) {
+	        if(this[i] && this[i].parentElement) {
+	            this[i].parentElement.removeChild(this[i]);
+	        }
+	    }
+	}
+	el.remove();
+}
+
+function show_results(teams) {
+	document.getElementById("results_h1").innerHTML = "Results:"
+	var table = document.getElementById("results_table");
+	table.innerHTML = "";
+	for (i=0; i<teams.length; i++) {
+		var n = table.rows.length;
+		var row = table.insertRow(n);
+		var cell = row.insertCell(0)
+		cell.innerHTML = i.toString();
+		var team = teams[i];
+		for (j=0; j<team.length; j++) {
+			var cell = row.insertCell(j+1);
+			cell.innerHTML = team[j];
+		}
+	}
+	localStorage["results"] = true;
+}
 
 function calculate_teams() {
 	var m = parseInt(document.getElementById("players").value);
@@ -43,6 +78,7 @@ function calculate_teams() {
 		teams[team_number].push(names[i]);
 		count += 1;
 	}
+	show_results(teams);
 	return teams;
 }
 document.getElementById("calculate_teams").onclick = calculate_teams;
