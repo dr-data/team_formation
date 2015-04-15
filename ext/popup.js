@@ -1,19 +1,51 @@
-function create_row() {
-    var table = document.getElementById("main_table");
-    var n = table.rows.length;
-    var m = table.rows[0].cells.length;
-    var row = table.insertRow(-1);
-    var cell = row.insertCell(0);
-    cell.innerHTML = n;
-    var cell = row.insertCell(1);
-    cell.innerHTML = "<input size=10>";
-    for (i=2; i<m; i++) {
-	    var cell = row.insertCell(i);
-	    cell.innerHTML = "<input size=4>";
-    }
-    console.log(document.body.innerHTML);
+// localStorage.clear(); // remove all values; todo move to initialization
+if (localStorage["last_session"]) {
+	// restore a table
+	// TODO restore values from cells and teams and fill in the table
 }
+
+function create_row() {
+  	localStorage["last_session"] = true;
+	var table = document.getElementById("main_table");
+	var n = table.rows.length;
+	var m = table.rows[0].cells.length;
+	var row = table.insertRow(n);
+	console.log(n);
+	if (n === 1) {
+		localStorage["cells"] = JSON.stringify([{}]);
+	}
+	else if (n > 1) {
+		var cells = JSON.parse(localStorage["cells"]);
+		cells.push({});
+		localStorage["cells"] = JSON.stringify(cells);
+	}
+	var cell = row.insertCell(0);
+	cell.innerHTML = n;
+	for (j=1; j<m; j++) {
+		create_cell(n-1, j, row);
+	}
+}
+
+function create_cell(i, j, row){
+	var cell = row.insertCell(j);
+	if (j == 1) {
+		cell.innerHTML = "<input size=10>";
+	}
+	else {
+		cell.innerHTML = "<input size=4>";
+	}
+	cell.addEventListener("change", function () {
+		var cells = JSON.parse(localStorage["cells"]);
+    	console.log("Column of a cell: " + cell.cellIndex);
+    	console.log([i.toString(), j.toString()])
+    	cells[i.toString()][j.toString()] = cell.childNodes[0].value;
+    	localStorage["cells"] = JSON.stringify(cells);
+	})
+}
+
 document.getElementById('create_row').onclick = create_row;
+
+
 
 function remove_row() {
     document.getElementById("main_table").deleteRow(-1);
@@ -79,6 +111,7 @@ function calculate_teams() {
 		count += 1;
 	}
 	show_results(teams);
+	localStorage["teams"] = JSON.stringify(teams);
 	return teams;
 }
 document.getElementById("calculate_teams").onclick = calculate_teams;
