@@ -1,31 +1,59 @@
 // localStorage.clear(); // remove all values; todo move to initialization
 
-// function initialize_page() {
-// 	localStorage.clear()
-// 	var preambula = '<button type="button" id="create_row">Create row</button> \
-// 					<button type="button" id="remove_row">Delete row</button> \
-// 					<button type="button" id="initialize">New Table</button><br> \
-// 					Players per team: <input size="4" id="players" value="2"><br> \
-// 					<button type="button" id="calculate_teams">Find Teams</button> \
-// 					<table id="main_table"> \
-// 					  <tr> \
-// 					    <td>#</td> \
-// 					    <td>Name</td> \
-// 					    <td>Pref.1</td> \
-// 					    <td>Pref.2</td> \
-// 					    <td>Pref.3</td> \
-// 					  </tr> \
-// 					</table> \
-// 					<br> \
-// 					<h1 id="results_h1"></h1> \
-// 					<table id="results_table"> \
-// 					</table>'
-// 	var div = document.createElement('div');
-// 	div.innerHTML = preambula;
-// }
-// initialize_page();
+function initialize_page() {
+	var preambula = '<table id="main_table"> \
+					  <tr> \
+					    <td>#</td> \
+					    <td>Name</td> \
+					    <td>Pref.1</td> \
+					    <td>Pref.2</td> \
+					    <td>Pref.3</td> \
+					  </tr> \
+					</table> \
+					<br> \
+					<h1 id="results_h1"></h1> \
+					<table id="results_table"> \
+					</table>'
+	var div = document.createElement('div');
+	div.innerHTML = preambula;
+	document.getElementById('dynamic').innerHTML = '';
+	document.getElementById('dynamic').appendChild(div);
+}
+initialize_page();
+// restore a table
+if (localStorage["last_session"] === "true") {
+	localStorage["use_storage"] = true;
+	try {
+		var cells = JSON.parse(localStorage["cells"]);
+		var n = cells.length;
+		var table = document.getElementById("main_table")
+		for (i=0; i<n; i++) {
+			var row = create_row();
+			var cell = cells[i]
+			for (var key in cell) {
+				if (cell.hasOwnProperty(key)) {
+					var col = parseInt(key);
+					var val = cell[key];
+					row.cells[col].childNodes[0].value = val;
+				}
+			}
+		}
+	} catch	(e) {
+		console.log("Catched error");
+		console.log(e);
+	}
+	if (localStorage["results"] === "true") {
+		var teams = JSON.parse(localStorage["teams"]);
+		show_results(teams);
+	}
+	localStorage['use_storage'] = false;
+}
 
-// document.getElementById('initialize').onclick = initialize_page;
+
+document.getElementById('initialize').onclick = (function () {
+	localStorage.clear();
+	initialize_page();
+});
 
 function create_row() {
   	localStorage["last_session"] = true;
@@ -33,7 +61,7 @@ function create_row() {
 	var n = table.rows.length;
 	var m = table.rows[0].cells.length;
 	var row = table.insertRow(n);
-	if (!JSON.parse(localStorage['use_storage'])) {
+	if (!("use_storage" in localStorage) || (localStorage['use_storage'] === "false")) {
 		if (n === 1) {
 			localStorage["cells"] = JSON.stringify([{}]);
 		}
@@ -43,6 +71,7 @@ function create_row() {
 			localStorage["cells"] = JSON.stringify(cells);
 		}
 	}
+
 	var cell = row.insertCell(0);
 	cell.innerHTML = n;
 	for (j=1; j<m; j++) {
@@ -155,36 +184,4 @@ function shuffle(array) {
     array[randomIndex] = temporaryValue;
   }
   return array;
-}
-
-// if (!localStorage["last_session"]) {
-// 	initialize_page();
-// }
-// restore a table
-if (localStorage["last_session"]) {
-	localStorage["use_storage"] = true;
-	try {
-		var cells = JSON.parse(localStorage["cells"]);
-		var n = cells.length;
-		var table = document.getElementById("main_table")
-		for (i=0; i<n; i++) {
-			var row = create_row();
-			var cell = cells[i]
-			for (var key in cell) {
-				if (cell.hasOwnProperty(key)) {
-					var col = parseInt(key);
-					var val = cell[key];
-					row.cells[col].childNodes[0].value = val;
-				}
-			}
-		}
-	} catch	(e) {
-		console.log("Catched error");
-		console.log(e);
-	}
-	if (localStorage["results"]) {
-		var teams = JSON.parse(localStorage["teams"]);
-		show_results(teams);
-	}
-	localStorage['use_storage'] = false;
 }
