@@ -1,8 +1,31 @@
 // localStorage.clear(); // remove all values; todo move to initialization
-if (localStorage["last_session"]) {
-	// restore a table
-	// TODO restore values from cells and teams and fill in the table
-}
+
+// function initialize_page() {
+// 	localStorage.clear()
+// 	var preambula = '<button type="button" id="create_row">Create row</button> \
+// 					<button type="button" id="remove_row">Delete row</button> \
+// 					<button type="button" id="initialize">New Table</button><br> \
+// 					Players per team: <input size="4" id="players" value="2"><br> \
+// 					<button type="button" id="calculate_teams">Find Teams</button> \
+// 					<table id="main_table"> \
+// 					  <tr> \
+// 					    <td>#</td> \
+// 					    <td>Name</td> \
+// 					    <td>Pref.1</td> \
+// 					    <td>Pref.2</td> \
+// 					    <td>Pref.3</td> \
+// 					  </tr> \
+// 					</table> \
+// 					<br> \
+// 					<h1 id="results_h1"></h1> \
+// 					<table id="results_table"> \
+// 					</table>'
+// 	var div = document.createElement('div');
+// 	div.innerHTML = preambula;
+// }
+// initialize_page();
+
+// document.getElementById('initialize').onclick = initialize_page;
 
 function create_row() {
   	localStorage["last_session"] = true;
@@ -10,20 +33,22 @@ function create_row() {
 	var n = table.rows.length;
 	var m = table.rows[0].cells.length;
 	var row = table.insertRow(n);
-	console.log(n);
-	if (n === 1) {
-		localStorage["cells"] = JSON.stringify([{}]);
-	}
-	else if (n > 1) {
-		var cells = JSON.parse(localStorage["cells"]);
-		cells.push({});
-		localStorage["cells"] = JSON.stringify(cells);
+	if (!JSON.parse(localStorage['use_storage'])) {
+		if (n === 1) {
+			localStorage["cells"] = JSON.stringify([{}]);
+		}
+		else if (n > 1) {
+			var cells = JSON.parse(localStorage["cells"]);
+			cells.push({});
+			localStorage["cells"] = JSON.stringify(cells);
+		}
 	}
 	var cell = row.insertCell(0);
 	cell.innerHTML = n;
 	for (j=1; j<m; j++) {
 		create_cell(n-1, j, row);
 	}
+	return row
 }
 
 function create_cell(i, j, row){
@@ -36,16 +61,12 @@ function create_cell(i, j, row){
 	}
 	cell.addEventListener("change", function () {
 		var cells = JSON.parse(localStorage["cells"]);
-    	console.log("Column of a cell: " + cell.cellIndex);
-    	console.log([i.toString(), j.toString()])
     	cells[i.toString()][j.toString()] = cell.childNodes[0].value;
     	localStorage["cells"] = JSON.stringify(cells);
 	})
 }
 
 document.getElementById('create_row').onclick = create_row;
-
-
 
 function remove_row() {
     document.getElementById("main_table").deleteRow(-1);
@@ -133,6 +154,37 @@ function shuffle(array) {
     array[currentIndex] = array[randomIndex];
     array[randomIndex] = temporaryValue;
   }
-
   return array;
+}
+
+// if (!localStorage["last_session"]) {
+// 	initialize_page();
+// }
+// restore a table
+if (localStorage["last_session"]) {
+	localStorage["use_storage"] = true;
+	try {
+		var cells = JSON.parse(localStorage["cells"]);
+		var n = cells.length;
+		var table = document.getElementById("main_table")
+		for (i=0; i<n; i++) {
+			var row = create_row();
+			var cell = cells[i]
+			for (var key in cell) {
+				if (cell.hasOwnProperty(key)) {
+					var col = parseInt(key);
+					var val = cell[key];
+					row.cells[col].childNodes[0].value = val;
+				}
+			}
+		}
+	} catch	(e) {
+		console.log("Catched error");
+		console.log(e);
+	}
+	if (localStorage["results"]) {
+		var teams = JSON.parse(localStorage["teams"]);
+		show_results(teams);
+	}
+	localStorage['use_storage'] = false;
 }
