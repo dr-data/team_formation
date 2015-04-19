@@ -98,7 +98,13 @@ function create_cell(i, j, row){
 document.getElementById('create_row').onclick = create_row;
 
 function remove_row() {
-    document.getElementById("main_table").deleteRow(-1);
+    var table = document.getElementById("main_table")
+    if (table.rows.length > 1) {
+    	table.deleteRow(-1);
+    	var cells = JSON.parse(localStorage["cells"]);
+    	cells.pop();
+    	localStorage["cells"] = JSON.stringify(cells);
+    }
 }
 document.getElementById('remove_row').onclick = remove_row;
 
@@ -163,6 +169,10 @@ function calculate_teams() {
 	show_results(teams);
 	localStorage["teams"] = JSON.stringify(teams);
 	return teams;
+}
+
+function calculate_teams2() {
+
 }
 document.getElementById("calculate_teams").onclick = calculate_teams;
 
