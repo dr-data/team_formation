@@ -142,6 +142,13 @@ function show_results(teams) {
 	localStorage["results"] = true;
 }
 
+// http://stackoverflow.com/a/14636652/2069858
+function test_integer(data) {
+	if (typeof data==='number' && (data%1)===0)
+		return true;
+	return false
+}
+
 function calculate_teams() {
 	var m = parseInt(document.getElementById("players").value);
 	var table = document.getElementById("main_table");
@@ -171,8 +178,45 @@ function calculate_teams() {
 	return teams;
 }
 
-function calculate_teams2() {
+function assign_tasks_to_teams(T, tasks) {
+	var teams2tasks = {};
+	for (i=0; i<T; i++) {
+		teams2tasks[i.toString()] = tasks[i%tasks.length];
+	}
+	return teams2tasks
+}
 
+function calculate_teams2() {
+	var p = parseInt(document.getElementById("players").value);
+	if (test_integer(p) && p >= 1) {
+		m = parseInt(document.getElementById("players").value);
+	}
+	else {
+		alert("Please, insert valid number of people per team");
+		return;
+	}
+	var cells = JSON.parse(localStorage["cells"]);
+	var names = [];
+	var tasks = [];
+	var N = 0;
+	for (i=0; i<cells.length; i++) {
+		if ("1" in cells[i]) {
+			names.push(cells[i]["1"]);
+			N += 1;
+			for (j=2; j<5; j++) {
+				col = j.toString();
+				if (col in cells[i] && tasks.indexOf(cells[i][col]) === -1) {
+					tasks.push(cells[i][col]);
+				}
+			}
+		}
+	}
+	var T = Math.floor(N/m);
+	if (N%m != 0)
+		T += 1;
+
+	var teams = {};
+	var teams2tasks = assign_tasks_to_teams(T, tasks);
 }
 document.getElementById("calculate_teams").onclick = calculate_teams;
 
