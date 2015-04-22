@@ -85,9 +85,10 @@ function create_mark(i, j, row) {
 	var cell = row.insertCell(j);
 	cell.innerHTML = '<img style="cursor: pointer" src="icons/minus16_24.png" id="mark_row' + i + '">';
 	document.getElementById('mark_row' + i).onclick = function () {
-		remove_row(i);
+		remove_row(row.rowIndex);
 		var table = document.getElementById("main_table");
 		var n = table.rows.length;
+		// change the very first column accordingly
 		for (i=1; i<n; i++) {
 			table.rows[i].cells[0].innerHTML = i;
 		}
@@ -114,10 +115,9 @@ document.getElementById('create_row').onclick = create_row;
 function remove_row(i) {
     var table = document.getElementById("main_table")
     if (table.rows.length > 1) {
-    	table.deleteRow(i+1);
+    	table.deleteRow(i);
     	var cells = JSON.parse(localStorage["cells"]);
-    	cells.splice(i, 1);
-    	// cells.pop();
+    	cells.splice(i-1, 1);
     	localStorage["cells"] = JSON.stringify(cells);
     }
 }
@@ -139,6 +139,7 @@ function remove_element(el) {
 	el.remove();
 }
 
+// for random selection
 function show_results(teams) {
 	document.getElementById("results_h1").innerHTML = "Results:"
 	var table = document.getElementById("results_table");
@@ -152,6 +153,24 @@ function show_results(teams) {
 		for (j=0; j<team.length; j++) {
 			var cell = row.insertCell(j+1);
 			cell.innerHTML = team[j];
+		}
+	}
+	localStorage["results"] = true;
+}
+
+// for preferred selection
+function show_results2(teams, teams2tasks) {
+	document.getElementById("results_h1").innerHTML = "Results:"
+	var table = document.getElementById("results_table");
+	table.innerHTML = "";
+	for (t in teams2tasks) {
+		var n = table.rows.length;
+		var row = table.insertRow(n);
+		var cell = row.insertCell(0)
+		cell.innerHTML = teams2tasks[t] + ":";
+		for (j=0; j<teams[t].length; j++) {
+			var cell = row.insertCell(j+1);
+			cell.innerHTML = teams[t][j];
 		}
 	}
 	localStorage["results"] = true;
@@ -196,7 +215,7 @@ function calculate_teams() {
 function assign_tasks_to_teams(T, tasks) {
 	var teams2tasks = {};
 	for (i=0; i<T; i++) {
-		teams2tasks[i.toString()] = tasks[i%tasks.length];
+		teams2tasks[i.toString()] = tasks[i%tasks.length] || "Random Team";
 	}
 	return teams2tasks
 }
@@ -231,9 +250,37 @@ function calculate_teams2() {
 		T += 1;
 
 	var teams = {};
+	for (i=0; i<T; i++) {
+		teams[i.toString()] = [];
+	}
 	var teams2tasks = assign_tasks_to_teams(T, tasks);
+	// console.log(teams2tasks);
+
+	for (i=0; i<cells.length; i++) {
+		if ("1" in cells[i]) { // There is a name 
+			// choose the best team
+			var best_team = NaN;
+			var best_team_score = -10000;
+			for (var t in teams2tasks) {
+				console.log(teams[t].length, m)
+				if (teams[t].length < m) {
+					score = (cells[i]["2"] === teams2tasks[t])*2 + (cells[i]["3"] === teams2tasks[t])*1.5 + (cells[i]["4"] === teams2tasks[t])*1;
+					// console.log(score);
+					if (score > best_team_score) {
+						best_team_score = score;
+						best_team = t;
+					}
+				}
+			}
+			// console.log(best_team_score, best_team);
+			teams[best_team].push(cells[i]["1"]);
+		}
+	}
+	show_results2(teams, teams2tasks);
+	localStorage["teams"] = JSON.stringify(teams);
+	return teams
 }
-document.getElementById("calculate_teams").onclick = calculate_teams;
+document.getElementById("calculate_teams").onclick = calculate_teams2;
 
 // shuffle array 
 // found here: http://stackoverflow.com/a/2450976/2069858
