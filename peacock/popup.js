@@ -77,7 +77,21 @@ function create_row() {
 	for (j=1; j<m; j++) {
 		create_cell(n-1, j, row);
 	}
+	create_mark(n-1, m, row);
 	return row
+}
+
+function create_mark(i, j, row) {
+	var cell = row.insertCell(j);
+	cell.innerHTML = '<img style="cursor: pointer" src="icons/minus16_24.png" id="mark_row' + i + '">';
+	document.getElementById('mark_row' + i).onclick = function () {
+		remove_row(i);
+		var table = document.getElementById("main_table");
+		var n = table.rows.length;
+		for (i=1; i<n; i++) {
+			table.rows[i].cells[0].innerHTML = i;
+		}
+	}
 }
 
 function create_cell(i, j, row){
@@ -97,16 +111,17 @@ function create_cell(i, j, row){
 
 document.getElementById('create_row').onclick = create_row;
 
-function remove_row() {
+function remove_row(i) {
     var table = document.getElementById("main_table")
     if (table.rows.length > 1) {
-    	table.deleteRow(-1);
+    	table.deleteRow(i+1);
     	var cells = JSON.parse(localStorage["cells"]);
-    	cells.pop();
+    	cells.splice(i, 1);
+    	// cells.pop();
     	localStorage["cells"] = JSON.stringify(cells);
     }
 }
-document.getElementById('remove_row').onclick = remove_row;
+// document.getElementById('remove_row').onclick = remove_row;
 
 // solution found here
 // http://stackoverflow.com/a/18120786/2069858
