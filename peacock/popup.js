@@ -4,7 +4,7 @@ function initialize_page() {
 	var preambula = '<table id="main_table"> \
 					  <tr> \
 					    <td>#</td> \
-					    <td>Name</td> \
+					    <td>Participant</td> \
 					    <td>Pref.1</td> \
 					    <td>Pref.2</td> \
 					    <td>Pref.3</td> \
@@ -77,13 +77,14 @@ function create_row() {
 	for (j=1; j<m; j++) {
 		create_cell(n-1, j, row);
 	}
-	create_mark(n-1, m, row);
+	create_minus(n-1, m, row);
+	create_plus(n-1, m, row);
 	return row
 }
 
-function create_mark(i, j, row) {
+function create_minus(i, j, row) {
 	var cell = row.insertCell(j);
-	cell.innerHTML = '<img style="cursor: pointer" src="icons/minus16_24.png" id="mark_row' + i + '">';
+	cell.innerHTML = '<img class="clickable" src="icons/minus16_24.png" id="mark_row' + i + '">';
 	document.getElementById('mark_row' + i).onclick = function () {
 		remove_row(row.rowIndex);
 		var table = document.getElementById("main_table");
@@ -93,6 +94,10 @@ function create_mark(i, j, row) {
 			table.rows[i].cells[0].innerHTML = i;
 		}
 	}
+}
+
+function create_plus (i, j, row) {
+
 }
 
 function create_cell(i, j, row){

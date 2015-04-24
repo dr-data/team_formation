@@ -1,0 +1,27 @@
+/*#popup {
+	padding: 10px;
+	height: 200px;
+	width: 400px;
+	font-family: Helvetica, Ubuntu, Arial, sans-serif;
+}
+h1 {
+	font-size: 2em;
+}*/
+body {
+	width: 300px;
+	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFFFFF), color-stop(1, #8FEFEF));
+}
+
+#peacock_logo {
+	width: 20%;
+}
+#peacock_header {
+	width: 75%;
+}
+.clickable {
+	cursor: pointer;
+	margin-right: 5px;
+}
+#players {
+	margin-right: 20px;
+}
