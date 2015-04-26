@@ -4,10 +4,11 @@ function initialize_page() {
 	var preambula = '<table id="main_table"> \
 					  <tr> \
 					    <td>#</td> \
-					    <td>Participant</td> \
+					    <td>Player</td> \
 					    <td>Pref.1</td> \
 					    <td>Pref.2</td> \
 					    <td>Pref.3</td> \
+					    <td>Skill</td> \
 					  </tr> \
 					</table> \
 					<br> \
@@ -78,7 +79,6 @@ function create_row() {
 		create_cell(n-1, j, row);
 	}
 	create_minus(n-1, m, row);
-	create_plus(n-1, m, row);
 	return row
 }
 
@@ -94,10 +94,6 @@ function create_minus(i, j, row) {
 			table.rows[i].cells[0].innerHTML = i;
 		}
 	}
-}
-
-function create_plus (i, j, row) {
-
 }
 
 function create_cell(i, j, row){
@@ -191,18 +187,20 @@ function test_integer(data) {
 function calculate_teams() {
 	var m = parseInt(document.getElementById("players").value);
 	var table = document.getElementById("main_table");
-	var N = table.rows.length - 1;
+	var names = [];
+	var N = 0;
+	for (i=0; i<cells.length; i++) {
+		if ("1" in cells[i]) {
+			names.push(cells[i]["1"]);
+			N += 1;
+		}
+	}
 	var T = Math.floor(N/m);
 	if (N%m != 0)
 		T += 1;
-	// console.log(N, m, T);
 	var teams = new Array(T);
 	for (i=0; i<T; i++) {
 		teams[i] = [];
-	}
-	var names = [];
-	for (i=1; i<table.rows.length; i++) {
-		names.push(table.rows[i].cells[1].childNodes[0].value);
 	}
 	names = shuffle(names);
 	var count = 0;
@@ -238,6 +236,7 @@ function calculate_teams2() {
 	var names = [];
 	var tasks = [];
 	var N = 0;
+	// calculate number of tasks
 	for (i=0; i<cells.length; i++) {
 		if ("1" in cells[i]) {
 			names.push(cells[i]["1"]);
@@ -250,6 +249,11 @@ function calculate_teams2() {
 			}
 		}
 	}
+	// if no tasks, apply random algorithm
+	if (tasks.length === 0) {
+		teams = calculate_teams();
+		return teams
+	}
 	var T = Math.floor(N/m);
 	if (N%m != 0)
 		T += 1;
@@ -258,27 +262,48 @@ function calculate_teams2() {
 	for (i=0; i<T; i++) {
 		teams[i.toString()] = [];
 	}
+	var teams2skills = {}
+	for (i=0; i<T; i++) {
+		teams2skills[i.toString()] = [];
+	}
 	var teams2tasks = assign_tasks_to_teams(T, tasks);
-	// console.log(teams2tasks);
 
+	// names to skill
+	names2skils = {}
 	for (i=0; i<cells.length; i++) {
-		if ("1" in cells[i]) { // There is a name 
+		if ("1" in cells[i]) { // if there is a name 
+			names2skils[cells[i]["1"]] = cells[i]["5"];
+		}
+	}
+
+	// main logic
+	// assign players to team
+	for (i=0; i<cells.length; i++) {
+		if ("1" in cells[i]) { // if there is a name 
 			// choose the best team
 			var best_team = NaN;
 			var best_team_score = -10000;
 			for (var t in teams2tasks) {
-				console.log(teams[t].length, m)
 				if (teams[t].length < m) {
 					score = (cells[i]["2"] === teams2tasks[t])*2 + (cells[i]["3"] === teams2tasks[t])*1.5 + (cells[i]["4"] === teams2tasks[t])*1;
-					// console.log(score);
+					// check is there is another player with the same skill
+					if (cells[i]["5"]) {
+						for (j=0; j<teams2skills[t].length; j++) {
+							if (teams2skills[t][j] === cells[i]["5"]) {
+								score -= 2;
+								break;
+							}
+						}
+					} 
+					// console.log(i, score)
 					if (score > best_team_score) {
 						best_team_score = score;
 						best_team = t;
 					}
 				}
 			}
-			// console.log(best_team_score, best_team);
 			teams[best_team].push(cells[i]["1"]);
+			teams2skills[best_team].push(cells[i]["5"]);
 		}
 	}
 	show_results2(teams, teams2tasks);
