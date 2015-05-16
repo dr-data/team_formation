@@ -8,7 +8,7 @@ h1 {
 	font-size: 2em;
 }*/
 body {
-	width: 325px;
+	width: 550px;
 	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFFFFF), color-stop(1, #8FEFEF));
 }
 
@@ -24,4 +24,9 @@ body {
 }
 #players {
 	margin-right: 20px;
+}
+#table {
+	width: 507px;
+	height: 200px;
+	overflow: hidden;
 }

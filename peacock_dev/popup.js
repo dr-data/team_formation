@@ -82,7 +82,10 @@ function create_table() {
 		  {data: 'skill'}
 		],
 		rowHeaders: true,
-		minSpareRows: 2,
+		minSpareRows: 4,
+		manualColumnResize: true,
+		colWidths: [100, 80, 80, 80, 100],
+		connect: "lower",
 		afterChange: function (change, source) {
 			// restore table after reload of a page
 			if (source === "loadData") {
@@ -110,24 +113,29 @@ function create_table() {
 }
 
 function number_of_players() {
-	var p = parseInt(document.getElementById("players").value);
+	// var p = parseInt(document.getElementById("players").value);
+	var p = parseInt(document.getElementById("slider-players").innerHTML);
 	if (test_integer(p) && p >= 1) {
-		m = parseInt(document.getElementById("players").value);
+		return p
 	}
 	else {
 		alert("Please, insert valid number of people per team");
 		return;
 	}
-	return p
 }
 
-function create_results_table() {
-	var p = number_of_players();
-
+function create_headers(p) {
 	col_headers = ['Team']
 	for (i=0;i<p;i++) {
 		col_headers.push('Player ' + (i+1).toString())
 	}
+	return col_headers
+}
+
+function create_results_table() {
+	var p = number_of_players();
+	var col_headers = create_headers(p);
+	
 	var container = document.getElementById('results');
 	var hot;
 	hot = new Handsontable(container, {
@@ -142,6 +150,8 @@ function create_results_table() {
 				if (localStorage['results']) {
 					var data = JSON.parse(localStorage['results']);
 		    		var dataByFilled = data.filter(isDataInRow);
+		    		if (dataByFilled.length === 0) // in case we removed everything from results table
+		    			dataByFilled = [same_el_arr(p+1, '')]
 		    		this.loadData(dataByFilled);
 		    		this.render();
 		    		return
@@ -158,7 +168,60 @@ function create_results_table() {
 	return hot
 }
 
+function load_results(table, results) {
+	var n_cols = table.countCols();
+	for (i=0; i<results.length; i++) {
+		for (j=0; j<results[i].length; j++) {
+			if (j < n_cols)
+				table.setDataAtCell(i,j,results[i][j]);
+		}
+	}
+}
+// using global variable results_table
+function create_slider() {
+	// determine the last state of the slider value
+	if (localStorage['results']) {
+		var data = JSON.parse(localStorage['results']);
+		var res_length = data[0].length - 1;
+	}
+	var start = res_length || 2;
+	$('#slider-range').noUiSlider({
+		start: [ start ],
+		step: 1,
+		range: {
+			'min': [ 1 ],
+			'max': [ 10 ]
+		}
+	});
+	// add value of slider
+	$('#slider-range').Link('lower').to($('#slider-range-value'), function (value) {
+		$(this).html(
+			'<strong>Players: </strong>' +
+			'<span id="slider-players">' + Math.floor(value) + '</span>'
+		);
+	});
+	// change the size of results table when slider changes
+	$('#slider-range').on({
+		slide: function() {
+			var p = number_of_players();
+			var n_cols = results_table.countCols();
+			if (p > n_cols - 1) {
+				results_table.alter('insert_col', n_cols);
+				var col_headers = create_headers(p+1); // create proper headers
+				results_table.updateSettings({
+					colHeaders: col_headers
+				});
+			}
+			else {
+				results_table.alter('remove_col', n_cols-1);
+			}
+			results_table.render();
+		}
+	})
+}
+
 function initialize_page() {
+	create_slider();
 	create_preambula();
 	var hot = create_table();
 	var results = create_results_table();
@@ -196,8 +259,8 @@ function calculate_teams(hot, results_table) {
 		}
 	}
 
-	var T = Math.floor(N/m); // number of teams
-	if (N%m != 0)
+	var T = Math.floor(N/p); // number of teams
+	if (N%p != 0)
 		T += 1;
 	var teams = {};
 	for (i=0; i<T; i++) {
@@ -227,7 +290,7 @@ function calculate_teams(hot, results_table) {
 				var best_team = NaN;
 				var best_team_score = -10000;
 				for (var t in teams2tasks) {
-					if (teams[t].length < m) {
+					if (teams[t].length < p) {
 						score = (cells[i]["pref"]["first"] === teams2tasks[t])*2 + (cells[i]["pref"]["sec"] === teams2tasks[t])*1.5 + (cells[i]["pref"]["third"] === teams2tasks[t])*1;
 						// check is there is another player with the same skill
 						if (cells[i]["skill"]) {

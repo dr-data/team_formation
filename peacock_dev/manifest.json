@@ -1,6 +1,6 @@
 {
   "name": "Peacock Dev",
-  "version": "0.2.1",
+  "version": "0.3.4",
   "manifest_version": 2,
   "description": "Instantly group people in teams",
   "icons": {
@@ -25,8 +25,5 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "identity",
-    "https://www.googleapis.com/",
-    "https://accounts.google.com/"
   ]
 }
