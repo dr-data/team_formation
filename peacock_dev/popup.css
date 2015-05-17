@@ -8,19 +8,21 @@ h1 {
 	font-size: 2em;
 }*/
 body {
-	width: 550px;
+	width: 600px;
 	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFFFFF), color-stop(1, #8FEFEF));
 }
 
-#peacock_logo {
+/*#peacock_logo {
 	width: 20%;
-}
+}*/
 #peacock_header {
 	width: 75%;
 }
 .clickable {
 	cursor: pointer;
-	margin-right: 5px;
+	/*margin-right: 5px;*/
+	float: left;
+	margin-top: 100px;
 }
 #players {
 	margin-right: 20px;
@@ -29,4 +31,20 @@ body {
 	width: 507px;
 	height: 200px;
 	overflow: hidden;
+	float: left;
+	margin-right: 20px;
+} 
+#results{
+	width: 507px;
+	height: 150px;
+	overflow: hidden;
+}
+#slider-range {
+	height: 200px;
+	float: left;
+	margin-top: -18px;
+	margin-right: 20px;
+}
+#floated_left {
+	float:left;
 }

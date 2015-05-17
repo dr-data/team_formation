@@ -188,6 +188,8 @@ function create_slider() {
 	$('#slider-range').noUiSlider({
 		start: [ start ],
 		step: 1,
+		connect: "lower",
+		orientation: "vertical",
 		range: {
 			'min': [ 1 ],
 			'max': [ 10 ]
