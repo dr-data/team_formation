@@ -11,12 +11,21 @@ body {
 	width: 600px;
 	background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #FFFFFF), color-stop(1, #8FEFEF));
 }
+#content {
+	margin-left: 20px;
+}
 
 /*#peacock_logo {
 	width: 20%;
 }*/
 #peacock_header {
 	width: 75%;
+}
+#subtitle {
+	font-family: "Comic Sans MS", cursive, sans-serif;
+	font-weight: bold;
+	font-size: 150%;
+	margin-left: 20%;
 }
 .clickable {
 	cursor: pointer;
@@ -44,7 +53,16 @@ body {
 	float: left;
 	margin-top: -18px;
 	margin-right: 20px;
+	margin-bottom: 40px;
 }
 #floated_left {
 	float:left;
+}
+.tooltip {
+	display: block;
+	font: 400 12px/12px Arial;
+	border-radius: 3px;
+	margin-left: 35px;
+	margin-top: 10px;
+	width: 100px;
 }

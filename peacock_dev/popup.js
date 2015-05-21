@@ -82,7 +82,7 @@ function create_table() {
 		  {data: 'skill'}
 		],
 		rowHeaders: true,
-		minSpareRows: 4,
+		minSpareRows: 8,
 		manualColumnResize: true,
 		colWidths: [100, 80, 80, 80, 100],
 		connect: "lower",
@@ -177,7 +177,7 @@ function load_results(table, results) {
 		}
 	}
 }
-// using global variable results_table
+// using global variable hot and results_table
 function create_slider() {
 	// determine the last state of the slider value
 	if (localStorage['results']) {
@@ -196,28 +196,30 @@ function create_slider() {
 		}
 	});
 	// add value of slider
-	$('#slider-range').Link('lower').to($('#slider-range-value'), function (value) {
+	// $('#slider-range').Link('lower').to($('#slider-range-value'), function (value) {
+	$('#slider-range').Link('lower').to('-inline-<div class="tooltip"></div>', function (value) {
 		$(this).html(
-			'<strong>Players: </strong>' +
+			'<strong>  Players:  </strong>' + 
 			'<span id="slider-players">' + Math.floor(value) + '</span>'
 		);
 	});
 	// change the size of results table when slider changes
 	$('#slider-range').on({
 		slide: function() {
-			var p = number_of_players();
-			var n_cols = results_table.countCols();
-			if (p > n_cols - 1) {
-				results_table.alter('insert_col', n_cols);
-				var col_headers = create_headers(p+1); // create proper headers
-				results_table.updateSettings({
-					colHeaders: col_headers
-				});
-			}
-			else {
-				results_table.alter('remove_col', n_cols-1);
-			}
-			results_table.render();
+			// var p = number_of_players();
+			// var n_cols = results_table.countCols();
+			// if (p > n_cols - 1) {
+			// 	results_table.alter('insert_col', n_cols);
+			// 	var col_headers = create_headers(p+1); // create proper headers
+			// 	results_table.updateSettings({
+			// 		colHeaders: col_headers
+			// 	});
+			// }
+			// else {
+			// 	results_table.alter('remove_col', n_cols-1);
+			// }
+			calculate_teams(hot, results_table);
+			// results_table.render();
 		}
 	})
 }
@@ -332,7 +334,7 @@ function show_results(teams, teams2tasks, results_table) {
 	results_table.render();
 }
 
-document.getElementById("calculate_teams").onclick = function() {
-	calculate_teams(hot, results_table);
-}
+// document.getElementById("calculate_teams").onclick = function() {
+// 	calculate_teams(hot, results_table);
+// }
 
