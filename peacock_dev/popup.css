@@ -24,7 +24,7 @@ body {
 #subtitle {
 	font-family: "Comic Sans MS", cursive, sans-serif;
 	font-weight: bold;
-	font-size: 150%;
+	font-size: 24px;
 	margin-left: 20%;
 }
 .clickable {
@@ -37,14 +37,16 @@ body {
 	margin-right: 20px;
 }
 #table {
-	width: 507px;
+	font-family: Candara, 'Times New Roman', serif;
+	width: 437px;
 	height: 200px;
 	overflow: hidden;
 	float: left;
 	margin-right: 20px;
 } 
 #results{
-	width: 507px;
+	font-family: Candara, 'Times New Roman', serif;
+	width: 437px;
 	height: 150px;
 	overflow: hidden;
 }
@@ -65,4 +67,5 @@ body {
 	margin-left: 35px;
 	margin-top: 10px;
 	width: 100px;
+	font-family: Candara, 'Times New Roman', serif;
 }

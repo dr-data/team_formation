@@ -2,20 +2,26 @@
 
 // check if the handsontable data object (row) is empty
 function isDataInRow(obj) {
-	for (key in obj) {
-		if (key === "pref") {
-			for (pref in obj[key]) {
-				if (obj[key][pref]) {
-					return true
-				}
-			}
-		}
-		else {
-			if (obj[key]) 
-				return true
-		}
+	if (obj["id"]) {
+		// console.log('returning true')
+		return true
 	}
+	// console.log('returning false')
 	return false
+	// for (key in obj) {
+	// 	if (key === "pref") {
+	// 		for (pref in obj[key]) {
+	// 			if (obj[key][pref]) {
+	// 				return true
+	// 			}
+	// 		}
+	// 	}
+	// 	else {
+	// 		if (obj[key]) 
+	// 			return true
+	// 	}
+	// }
+	// return false
 }
 
 // shuffle array 
@@ -84,7 +90,7 @@ function create_table() {
 		rowHeaders: true,
 		minSpareRows: 8,
 		manualColumnResize: true,
-		colWidths: [100, 80, 80, 80, 100],
+		colWidths: [90, 60, 60, 60, 100],
 		connect: "lower",
 		afterChange: function (change, source) {
 			// restore table after reload of a page
@@ -102,8 +108,7 @@ function create_table() {
 			else {
 				// save all data to local storge if the edit happends
 				localStorage['data'] = JSON.stringify(this.getData());
-				// remove results
-				// results_table.clear();
+
 				return
 			}
 		}
@@ -113,7 +118,6 @@ function create_table() {
 }
 
 function number_of_players() {
-	// var p = parseInt(document.getElementById("players").value);
 	var p = parseInt(document.getElementById("slider-players").innerHTML);
 	if (test_integer(p) && p >= 1) {
 		return p
@@ -147,12 +151,14 @@ function create_results_table() {
 			// restore table after reload of a page
 			if (source === "loadData") {
 				// load data from local storage
+				console.log(localStorage['results'])
 				if (localStorage['results']) {
 					var data = JSON.parse(localStorage['results']);
-		    		var dataByFilled = data.filter(isDataInRow);
-		    		if (dataByFilled.length === 0) // in case we removed everything from results table
-		    			dataByFilled = [same_el_arr(p+1, '')]
-		    		this.loadData(dataByFilled);
+					if (!data[0][0])
+						data = [same_el_arr(p+1, '')]
+		    		// if (data.length === 0) // in case we removed everything from results table
+		    		// 	data = [same_el_arr(p+1, '')]
+		    		this.loadData(data);
 		    		this.render();
 		    		return
 				}
@@ -177,14 +183,9 @@ function load_results(table, results) {
 		}
 	}
 }
-// using global variable hot and results_table
+// make a vertical slider 
 function create_slider() {
-	// determine the last state of the slider value
-	if (localStorage['results']) {
-		var data = JSON.parse(localStorage['results']);
-		var res_length = data[0].length - 1;
-	}
-	var start = res_length || 2;
+	var start = Math.floor(localStorage['tooltip-players']) || 2;
 	$('#slider-range').noUiSlider({
 		start: [ start ],
 		step: 1,
@@ -195,40 +196,34 @@ function create_slider() {
 			'max': [ 10 ]
 		}
 	});
-	// add value of slider
-	// $('#slider-range').Link('lower').to($('#slider-range-value'), function (value) {
+}
+// make a tip near slider with the value of slider
+function create_tooltip() {
 	$('#slider-range').Link('lower').to('-inline-<div class="tooltip"></div>', function (value) {
 		$(this).html(
 			'<strong>  Players:  </strong>' + 
 			'<span id="slider-players">' + Math.floor(value) + '</span>'
 		);
 	});
-	// change the size of results table when slider changes
+}
+// change results table when slider is changed
+function onSlide(hot, results_table) {
 	$('#slider-range').on({
 		slide: function() {
-			// var p = number_of_players();
-			// var n_cols = results_table.countCols();
-			// if (p > n_cols - 1) {
-			// 	results_table.alter('insert_col', n_cols);
-			// 	var col_headers = create_headers(p+1); // create proper headers
-			// 	results_table.updateSettings({
-			// 		colHeaders: col_headers
-			// 	});
-			// }
-			// else {
-			// 	results_table.alter('remove_col', n_cols-1);
-			// }
+			console.log('onslide')
+			localStorage['tooltip-players'] = Math.floor($('#slider-players').text());
 			calculate_teams(hot, results_table);
-			// results_table.render();
 		}
 	})
 }
 
 function initialize_page() {
 	create_slider();
+	create_tooltip();
 	create_preambula();
 	var hot = create_table();
 	var results = create_results_table();
+	onSlide(hot, results);
 	return [hot, results]
 
 }
@@ -257,12 +252,12 @@ function calculate_teams(hot, results_table) {
 			names.push(cells[i]["id"]);
 			N += 1;
 			for (pref in cells[i]["pref"]) {
-				if (cells[i]["pref"][pref])
-					tasks.push(cells[i]["pref"][pref])
+				var new_pref = cells[i]["pref"][pref];
+				if (new_pref && tasks.indexOf(new_pref) === -1)
+					tasks.push(new_pref)
 			}
 		}
 	}
-
 	var T = Math.floor(N/p); // number of teams
 	if (N%p != 0)
 		T += 1;
@@ -319,9 +314,30 @@ function calculate_teams(hot, results_table) {
 	show_results(teams, teams2tasks, results_table);
 	return teams
 }
-// for preferred selection
+
+// removes just cells' data, not the number of rows
+function remove_data(results_table) {
+	var n_cols = results_table.countCols();
+	var n_rows = results_table.countRows();
+	for (i=0; i<n_cols; i++) {
+		results_table.spliceCol(i, 0, n_rows);
+	}
+}
+
 function show_results(teams, teams2tasks, results_table) {
-	results_table.clear();
+	remove_data(results_table);
+	var p = number_of_players();
+	var n_cols = results_table.countCols();
+	if (p > n_cols - 1) {
+		results_table.alter('insert_col', n_cols);
+		var col_headers = create_headers(p+1); // create proper headers
+		results_table.updateSettings({
+			colHeaders: col_headers
+		});
+	}
+	else {
+		results_table.alter('remove_col', n_cols-1);
+	}
 	var row = 0
 	for (t in teams2tasks) {
 		// results_table.alter('insert_row');
