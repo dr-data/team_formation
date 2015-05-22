@@ -1,6 +1,6 @@
 {
   "name": "Peacock Dev",
-  "version": "0.4.2",
+  "version": "0.4.5",
   "manifest_version": 2,
   "description": "Instantly group people in teams",
   "icons": {
@@ -13,6 +13,7 @@
     "page": "background.html",
     "persistent": true
   },
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
   "browser_action": {
     "default_icon": "icons/peacock24.png",
     "default_title": "Create teams",

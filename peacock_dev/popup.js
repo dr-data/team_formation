@@ -3,25 +3,9 @@
 // check if the handsontable data object (row) is empty
 function isDataInRow(obj) {
 	if (obj["id"]) {
-		// console.log('returning true')
 		return true
 	}
-	// console.log('returning false')
 	return false
-	// for (key in obj) {
-	// 	if (key === "pref") {
-	// 		for (pref in obj[key]) {
-	// 			if (obj[key][pref]) {
-	// 				return true
-	// 			}
-	// 		}
-	// 	}
-	// 	else {
-	// 		if (obj[key]) 
-	// 			return true
-	// 	}
-	// }
-	// return false
 }
 
 // shuffle array 
@@ -56,6 +40,14 @@ function same_el_arr(n, el) {
 	return Array.apply(null, new Array(n)).map(function(){return el})
 }
 
+function not_null_arr(arr) {
+	for (i=0; i<arr.length; i++) {
+		if (arr[i] != null)
+			return true
+	}
+	return false
+}
+
 // -------------------------------------------------------------- //
 
 function create_preambula() {
@@ -79,7 +71,7 @@ function create_table() {
 		dataSchema: {id: null, pref: {first: null, sec: null, third: null}, skill: null},
 		// startRows: 5,
 		startCols: 4,
-		colHeaders: ["Player", "Pref. 1", "Pref. 2", "Pref. 3", "Skill"],
+		colHeaders: ["Player", "Top-1", "Top-2", "Top-3", "Skill"],
 		columns: [
 		  {data: 'id'},
 		  {data: 'pref.first'},
@@ -154,6 +146,7 @@ function create_results_table() {
 				console.log(localStorage['results'])
 				if (localStorage['results']) {
 					var data = JSON.parse(localStorage['results']);
+					// data = data.filter(not_null_arr);
 					if (!data[0][0])
 						data = [same_el_arr(p+1, '')]
 		    		// if (data.length === 0) // in case we removed everything from results table
@@ -328,6 +321,7 @@ function show_results(teams, teams2tasks, results_table) {
 	remove_data(results_table);
 	var p = number_of_players();
 	var n_cols = results_table.countCols();
+	// add/remove column after changsing a slider
 	if (p > n_cols - 1) {
 		results_table.alter('insert_col', n_cols);
 		var col_headers = create_headers(p+1); // create proper headers
@@ -338,6 +332,7 @@ function show_results(teams, teams2tasks, results_table) {
 	else {
 		results_table.alter('remove_col', n_cols-1);
 	}
+	// insert results to table
 	var row = 0
 	for (t in teams2tasks) {
 		// results_table.alter('insert_row');
@@ -347,10 +342,13 @@ function show_results(teams, teams2tasks, results_table) {
 		}
 		row = row + 1;
 	}
+	// remove empty rows from the end
+	n_rows = results_table.countRows();
+	for (i=0; i<n_rows; i++) {
+		if (results_table.isEmptyRow(i)) // the first time we see empty row
+			break
+	}
+	if (i!==0) // if not the first row
+		results_table.alter('remove_row', i, n_rows - i);
 	results_table.render();
 }
-
-// document.getElementById("calculate_teams").onclick = function() {
-// 	calculate_teams(hot, results_table);
-// }
-
